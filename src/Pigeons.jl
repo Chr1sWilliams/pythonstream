@@ -67,7 +67,7 @@ export pigeons, Inputs, PT,
     # references:
     DistributionLogPotential,
     # targets:
-    TuringLogPotential, StanLogPotential,
+    TuringLogPotential, StanLogPotential,PythonTarget,
     # some examples
     toy_mvn_target, toy_stan_target,
     # post-processing helpers
