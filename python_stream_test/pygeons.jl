@@ -1,6 +1,5 @@
-#!/home/meta-flux/julia-1.9.3/bin/julia
 using Pkg
-Pkg.activate("Pigeons.jl") ##
+Pkg.activate("../../Pigeons.jl") ##
 
 
 using Pigeons
@@ -10,7 +9,7 @@ function main()
     println("Enter the path to python_sampler (Press Enter to use the default path): ")
     script_path = readline()
     if script_path == ""
-        script_path = "Python_Gaussian.py"
+        script_path = "python_examples/Python_Gaussian.py"
     end
 
     println("Enter the number of chains (n_chains, default 12): ")
@@ -24,7 +23,7 @@ function main()
     println("Enter the path to the output directory (Press Enter to use the default path): ")
     output_directory = readline()
     if output_directory == ""
-        output_directory = "/home/meta-flux/output_samples/"
+        output_directory = "output_samples/"
     end
 
     script_name_without_extension = splitext(basename(script_path))[1]
@@ -62,8 +61,8 @@ function main()
         
         # Run save_samples.py at the end of the script
         try
-            run(`python3 save_samples.py --output-dir $output_directory`) # Replace with the correct path to your save_samples.py
-            println("save_samples.py executed successfully.")
+            run(`python3 sample_util/save_samples.py --output-dir $output_directory`) # Replace with the correct path to your save_samples.py
+            println("sample_util/save_samples.py executed successfully.")
         catch e
             println("An error occurred while executing save_samples.py: $e")
         end
