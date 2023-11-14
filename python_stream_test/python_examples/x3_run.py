@@ -20,13 +20,13 @@ def sample_init():
     return mean
 
 class LinearPathModel:
-    def __init__(self, proposal_model: hopsy.Gaussian, target_model: hopsy.Gaussian, beta: float):
-        self.proposal_model = proposal_model
+    def __init__(self, target_model: hopsy.Gaussian, beta: float):
+        #self.proposal_model = proposal_model
         self.target_model = x3cflux.HopsyModel(target_model)
         self.beta = beta
 
     def compute_negative_log_likelihood(self, x: np.ndarray) -> float:
-        return (1-self.beta)*self.proposal_model.compute_negative_log_likelihood(x) + self.beta*self.target_model.compute_negative_log_likelihood(x)
+        return  self.beta*self.target_model.compute_negative_log_likelihood(x)
 
 def initialize_memory_map(replica, rnd, max_samples, sample_dimension ,output_directory, dtype=np.float32):
     filename = os.path.join(output_directory, f'python_samples_replica{replica}_rnd{rnd}.npy')
@@ -52,27 +52,28 @@ def main():
     seed = np.uint32(args.seed)
     rng = hopsy.RandomNumberGenerator(seed)
 
-    simulator = x3cflux.create_simulator_from_fml("spiralus_inst_"+str(args.replica)+".fml", "ms+ps+uptake")
+    simulator = x3cflux.create_simulator_from_fml("python_examples/spiralus_inst.fml", "ms+ps+uptake")
+
     ineq_system = simulator.parameter_space.build_inequality_system()
     problem = hopsy.Problem(ineq_system.matrix, ineq_system.bound)
     problem = hopsy.round(problem)
 
     covariance = np.eye(9)
 
-    proposal_model = hopsy.Gaussian(mean=np.array([ 0.56350831,  4.43649167, 52.49999092, 52.49999092, 52.49999092, 52.49999092, 52.49999092, 52.49999092, 52.49999092]), covariance=covariance)
+    #proposal_model = hopsy.Gaussian(mean=np.array([ 0.56350831,  4.43649167, 52.49999092, 52.49999092, 52.49999092, 52.49999092, 52.49999092, 52.49999092, 52.49999092]), covariance=covariance)
     init_problem = hopsy.Problem(ineq_system.matrix, ineq_system.bound)
     init_problem = hopsy.round(init_problem)
-    init_problem.model = proposal_model
+    #init_problem.model = proposal_model
     x = sample_init()
     init_problem.starting_point = np.linalg.solve(problem.transformation, x - problem.shift)
-    init_chain = hopsy.MarkovChain(init_problem, hopsy.GaussianProposal)
-    init_chain.proposal.stepsize = 0.1
-    accrate, states = hopsy.sample(init_chain, rng, n_samples=100)
+    init_chain = hopsy.MarkovChain(init_problem, hopsy.UniformCoordinateHitAndRunProposal)
+    #init_chain.proposal.stepsize = 0.1
+    accrate, states = hopsy.sample(init_chain, rng, n_samples=3)
     x = init_chain.state
 
 
 
-    path_model = LinearPathModel(proposal_model,simulator,0)
+    path_model = LinearPathModel(simulator,0)
 
     sample_dimension = len(x)  
     max_rnd = args.max_round
