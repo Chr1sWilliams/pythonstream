@@ -100,14 +100,14 @@ def main():
             path_model.beta = beta
 
             if beta == 0:
-                accrate, states = hopsy.sample(init_chain, rng, n_samples=1)
+                accrate, states = hopsy.sample(init_chain, rng, n_samples=1, thinning=int(9**2//6) )
                 x = init_chain.state
 
             else:
                 problem.model = path_model
                 problem.starting_point = np.linalg.solve(problem.transformation, x - problem.shift)
                 chain = hopsy.MarkovChain(problem, hopsy.GaussianProposal)
-                chain.proposal.stepsize = 0.2
+                #chain.proposal.stepsize = 0.05
                 accrate, states = hopsy.sample(chain, rng, n_samples=1)
                 x = chain.state
 
